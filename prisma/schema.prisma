@@ -11,13 +11,13 @@ datasource db {
 }
 
 model Customer {
-  id           String  @id @default(uuid()) @map("_id") @db.ObjectId
-  clientCod    Int
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  clientCod    String
   client       String
   name         String
   register     String  @unique
-  phone        Int
-  ddd          Int
+  phone        String
+  ddd          String
   email        String?
   zipCode      String
   address      String
