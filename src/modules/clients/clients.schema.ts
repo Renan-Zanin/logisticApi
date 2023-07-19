@@ -1,12 +1,12 @@
 import * as z from "zod";
 
 const createClientSchema = z.object({
-  clientCod: z.number(),
+  clientCod: z.string(),
   client: z.string(),
   name: z.string(),
   register: z.string({ required_error: "CGC/CPF necessário" }),
-  phone: z.number(),
-  ddd: z.number(),
+  phone: z.string(),
+  ddd: z.string(),
   email: z.string().email(),
   zipCode: z.string(),
   address: z.string(),

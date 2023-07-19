@@ -1,30 +1,76 @@
 import { FastifyInstance } from "fastify";
-import { z } from 'zod'
+import { z } from "zod";
 import prisma from "../utils/prisma";
+import ExcelJS from "exceljs";
+import { CreateClientInput } from "../modules/clients/clients.schema";
+
+async function extractDataFromExcel(
+  filePath: string
+): Promise<CreateClientInput[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(filePath);
+  const worksheet = workbook.worksheets[0];
+
+  const customerData: CreateClientInput[] = [];
+
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber !== 1) {
+      const clientCod = row.getCell(2).toString();
+      const client = row.getCell(3).toString();
+      const name = row.getCell(4).toString();
+      const register = row.getCell(13).toString();
+      const phone = row.getCell(11).toString();
+      const ddd = row.getCell(10).toString();
+      const email = row.getCell(26).toString();
+      const zipCode = row.getCell(27).toString();
+      const address = row.getCell(7).toString();
+      const city = row.getCell(8).toString();
+      const neighborhood = row.getCell(17).toString();
+      const type = row.getCell(1).toString();
+
+      customerData.push({
+        clientCod,
+        client,
+        name,
+        register,
+        phone,
+        ddd,
+        email,
+        zipCode,
+        address,
+        city,
+        neighborhood,
+        type,
+      });
+    }
+  });
+
+  return customerData;
+}
 
 export async function customersRoutes(app: FastifyInstance) {
-  app.get('/customers', async (request) => {
-    const customers = await prisma.customer.findMany()
-    return customers
-  })
+  app.get("/customers", async (request) => {
+    const customers = await prisma.customer.findMany();
+    return customers;
+  });
 
-  app.get('/customers/:id', async (request, reply) => {
+  app.get("/customers/:id", async (request, reply) => {
     const uniqueCustumerSchema = z.object({
-      id: z.string()
-    })
+      id: z.string(),
+    });
 
-    const { id } = uniqueCustumerSchema.parse(request.params)
+    const { id } = uniqueCustumerSchema.parse(request.params);
 
     const customer = prisma.customer.findUnique({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
-    return customer
-  })
+    return customer;
+  });
 
-  app.post('/customers', async(request) => {
+  app.post("/customers", async (request) => {
     const createCustomerSchema = z.object({
       clientCod: z.string(),
       client: z.string(),
@@ -40,33 +86,64 @@ export async function customersRoutes(app: FastifyInstance) {
       type: z.string(),
     });
 
-    const { clientCod, client, name, register, phone, ddd, email, zipCode, address, city, neighborhood, type} = createCustomerSchema.parse(request.body)
+    const {
+      clientCod,
+      client,
+      name,
+      register,
+      phone,
+      ddd,
+      email,
+      zipCode,
+      address,
+      city,
+      neighborhood,
+      type,
+    } = createCustomerSchema.parse(request.body);
     const customer = await prisma.customer.create({
       data: {
-          clientCod,
-          client,
-          name,
-          register,
-          phone,
-          ddd,
-          email,
-          zipCode,
-          address,
-          city,
-          neighborhood,
-          type
-      }
+        clientCod,
+        client,
+        name,
+        register,
+        phone,
+        ddd,
+        email,
+        zipCode,
+        address,
+        city,
+        neighborhood,
+        type,
+      },
     });
 
-    return customer
-  })
+    return customer;
+  });
 
-  app.put('/customers/:id', async(request, reply) => {
+  app.post("/import", async (req, rep) => {
+    try {
+      const filePath =
+        "E:/portifolio/PROJETOS/logisticsApi/src/routes/clients.xlsx";
+
+      const customerData = await extractDataFromExcel(filePath);
+
+      const createCustomers = await prisma.customer.createMany({
+        data: customerData,
+      });
+
+      rep.send({ success: true, message: "Dados importados com sucesso." });
+    } catch (error) {
+      console.error(error);
+      rep.send({ success: false, message: "Erro ao importar os dados." });
+    }
+  });
+
+  app.put("/customers/:id", async (request, reply) => {
     const paramsSchema = z.object({
-      id: z.string()
-    })
+      id: z.string(),
+    });
 
-    const { id } = paramsSchema.parse(request.params)
+    const { id } = paramsSchema.parse(request.params);
 
     const updateCustomerSchema = z.object({
       clientCod: z.string(),
@@ -83,21 +160,34 @@ export async function customersRoutes(app: FastifyInstance) {
       type: z.string(),
     });
 
-    const { clientCod, client, name, register, phone, ddd, email, zipCode, address, city, neighborhood, type} = updateCustomerSchema.parse(request.body)
+    const {
+      clientCod,
+      client,
+      name,
+      register,
+      phone,
+      ddd,
+      email,
+      zipCode,
+      address,
+      city,
+      neighborhood,
+      type,
+    } = updateCustomerSchema.parse(request.body);
 
     let customer = await prisma.customer.findFirstOrThrow({
       where: {
         id,
-      }
-    })
+      },
+    });
 
-    if(!customer) {
-      return reply.status(401).send("The customer ID not exists!")
+    if (!customer) {
+      return reply.status(401).send("The customer ID not exists!");
     }
 
     customer = await prisma.customer.update({
       where: {
-        id
+        id,
       },
       data: {
         clientCod,
@@ -111,36 +201,36 @@ export async function customersRoutes(app: FastifyInstance) {
         address,
         city,
         neighborhood,
-        type
-    }
-    })
+        type,
+      },
+    });
 
-    return customer
-  })
+    return customer;
+  });
 
-  app.delete('/customers/:id', async(request, reply) => {
+  app.delete("/customers/:id", async (request, reply) => {
     const paramsSchema = z.object({
-      id: z.string()
-    })
+      id: z.string(),
+    });
 
-    const { id } = paramsSchema.parse(request.params)
+    const { id } = paramsSchema.parse(request.params);
 
     const customer = await prisma.customer.findFirstOrThrow({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
-    if(!customer) {
-      return reply.status(401).send("Customer ID not exists!")
+    if (!customer) {
+      return reply.status(401).send("Customer ID not exists!");
     }
 
     await prisma.customer.delete({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
-    return reply.status(200).send('User exclude with success!')
-  })
+    return reply.status(200).send("User exclude with success!");
+  });
 }
