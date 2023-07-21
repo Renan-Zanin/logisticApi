@@ -1,52 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import prisma from "../utils/prisma";
-import ExcelJS from "exceljs";
-import { CreateClientInput } from "../modules/clients/clients.schema";
-
-async function extractDataFromExcel(
-  filePath: string
-): Promise<CreateClientInput[]> {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(filePath);
-  const worksheet = workbook.worksheets[0];
-
-  const customerData: CreateClientInput[] = [];
-
-  worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber !== 1) {
-      const clientCod = row.getCell(2).toString();
-      const client = row.getCell(3).toString();
-      const name = row.getCell(4).toString();
-      const register = row.getCell(13).toString();
-      const phone = row.getCell(11).toString();
-      const ddd = row.getCell(10).toString();
-      const email = row.getCell(26).toString();
-      const zipCode = row.getCell(27).toString();
-      const address = row.getCell(7).toString();
-      const city = row.getCell(8).toString();
-      const neighborhood = row.getCell(17).toString();
-      const type = row.getCell(1).toString();
-
-      customerData.push({
-        clientCod,
-        client,
-        name,
-        register,
-        phone,
-        ddd,
-        email,
-        zipCode,
-        address,
-        city,
-        neighborhood,
-        type,
-      });
-    }
-  });
-
-  return customerData;
-}
 
 export async function customersRoutes(app: FastifyInstance) {
   app.get("/customers", async (request) => {
@@ -118,24 +72,6 @@ export async function customersRoutes(app: FastifyInstance) {
     });
 
     return customer;
-  });
-
-  app.post("/import", async (req, rep) => {
-    try {
-      const filePath =
-        "E:/portifolio/PROJETOS/logisticsApi/src/routes/clients.xlsx";
-
-      const customerData = await extractDataFromExcel(filePath);
-
-      const createCustomers = await prisma.customer.createMany({
-        data: customerData,
-      });
-
-      rep.send({ success: true, message: "Dados importados com sucesso." });
-    } catch (error) {
-      console.error(error);
-      rep.send({ success: false, message: "Erro ao importar os dados." });
-    }
   });
 
   app.put("/customers/:id", async (request, reply) => {
