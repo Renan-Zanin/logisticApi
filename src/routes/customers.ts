@@ -70,7 +70,7 @@ export async function customersRoutes(app: FastifyInstance) {
     return customer;
   });
 
-  app.post("/customers", async (request) => {
+  app.post("/customers", async (request, reply) => {
     const createCustomerSchema = z.object({
       clientCod: z.string(),
       client: z.string(),
@@ -83,7 +83,7 @@ export async function customersRoutes(app: FastifyInstance) {
       address: z.string(),
       city: z.string(),
       neighborhood: z.string(),
-      type: z.string(),
+      type: z.literal('VAREJO').or(z.literal('MERCADO'))
     });
 
     const {
@@ -100,6 +100,16 @@ export async function customersRoutes(app: FastifyInstance) {
       neighborhood,
       type,
     } = createCustomerSchema.parse(request.body);
+
+    const customerExists = await prisma.customer.findUnique({
+      where: {
+        register
+      }
+    })
+
+    if(customerExists) {
+      return reply.status(401).send("Customer already exists!")
+    }
     const customer = await prisma.customer.create({
       data: {
         clientCod,
@@ -120,30 +130,12 @@ export async function customersRoutes(app: FastifyInstance) {
     return customer;
   });
 
-  app.post("/import", async (req, rep) => {
-    try {
-      const filePath =
-        "E:/portifolio/PROJETOS/logisticsApi/src/routes/clients.xlsx";
-
-      const customerData = await extractDataFromExcel(filePath);
-
-      const createCustomers = await prisma.customer.createMany({
-        data: customerData,
-      });
-
-      rep.send({ success: true, message: "Dados importados com sucesso." });
-    } catch (error) {
-      console.error(error);
-      rep.send({ success: false, message: "Erro ao importar os dados." });
-    }
-  });
-
   app.put("/customers/:id", async (request, reply) => {
-    const paramsSchema = z.object({
+    const customerParamsSchema = z.object({
       id: z.string(),
     });
 
-    const { id } = paramsSchema.parse(request.params);
+    const { id } = customerParamsSchema.parse(request.params);
 
     const updateCustomerSchema = z.object({
       clientCod: z.string(),
@@ -157,7 +149,7 @@ export async function customersRoutes(app: FastifyInstance) {
       address: z.string(),
       city: z.string(),
       neighborhood: z.string(),
-      type: z.string(),
+      type: z.literal('VAREJO').or(z.literal('MERCADO'))
     });
 
     const {
@@ -231,6 +223,6 @@ export async function customersRoutes(app: FastifyInstance) {
       },
     });
 
-    return reply.status(200).send("User exclude with success!");
+    return reply.status(200).send("Customer exclude with success!");
   });
 }

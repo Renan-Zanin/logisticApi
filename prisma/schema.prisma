@@ -10,12 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CostumerType {
+  VAREJO
+  MERCADO
+}
+
 model Customer {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
   clientCod    String
   client       String
   name         String
-  register     String  @unique
+  register     String       @unique
   phone        String
   ddd          String
   email        String?
@@ -23,15 +28,59 @@ model Customer {
   address      String
   city         String
   neighborhood String
-  type         String
+  type         CostumerType
+  Sale         Sale[]
 }
 
-model Product {
-  id                String @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  unity             String
-  available         Int
-  lastEntrance      Int
-  lastEntranceTotal Int
-  code              Int
+model Sale {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  customerId  String   @db.ObjectId
+  totalWeight Float
+  createdAt   DateTime @default(now())
+  seller      String
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }
+
+// model SKU {
+//   id               String        @id @default(auto()) @map("_id") @db.ObjectId
+//   description      String        @unique
+//   code             String        @unique
+//   unity            String?
+//   unitsPerPack     Int?
+//   barCode          String?
+//   shortDescription String        @unique
+//   shelfLife        Int
+//   weight           Float
+//   Stock            Stock[]
+//   productSold      productSold[]
+// }
+
+// model Stock {
+//   id             String   @id @default(auto()) @map("_id") @db.ObjectId
+//   productId      String   @db.ObjectId
+//   available      Int
+//   CreatedAt      DateTime @default(now())
+//   productionDate DateTime
+//   expirationDate DateTime
+//   shelfLife      Int
+
+//   sku SKU @relation(fields: [productId], references: [id], onDelete: Cascade)
+// }
+
+// model productSold {
+//   id          String @id @default(auto()) @map("_id") @db.ObjectId
+//   skuId       String @db.ObjectId
+//   amount      Int
+//   totalWeight Float
+
+//   sku SKU @relation(fields: [skuId], references: [id], onDelete: Cascade)
+// }
+
+// model Sale {
+//   id               String @id @default(auto()) @map("_id") @db.ObjectId
+//   saleCode         String
+//   customerId       String @db.ObjectId
+//   paymentCondition String
+//   paymentMethod    String
+// }

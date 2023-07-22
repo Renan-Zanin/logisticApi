@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import 'dotenv/config'
 import cors from '@fastify/cors'
 import { customersRoutes } from './routes/customers'
+import { salesRoutes } from "./routes/sales";
 
 const server = Fastify();
 
@@ -10,6 +11,7 @@ server.register(cors, {
 })
 
 server.register(customersRoutes)
+server.register(salesRoutes)
 
 server.get("/health", async function (req, res) {
   return { status: "OK" };
