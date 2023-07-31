@@ -12,7 +12,7 @@ const createClientSchema = z.object({
   address: z.string(),
   city: z.string(),
   neighborhood: z.string(),
-  type: z.string(),
+  // type: z.string(),
 });
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;

@@ -16,11 +16,11 @@ enum CostumerType {
 }
 
 model Customer {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
   clientCod    String
   client       String
   name         String
-  register     String       @unique
+  register     String  @unique
   phone        String
   ddd          String
   email        String?
@@ -28,16 +28,18 @@ model Customer {
   address      String
   city         String
   neighborhood String
-  type         CostumerType
+  // type         CostumerType
   Sale         Sale[]
 }
 
 model Sale {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  saleId      String
   customerId  String   @db.ObjectId
   totalWeight Float
   createdAt   DateTime @default(now())
   seller      String
+  client      String
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }

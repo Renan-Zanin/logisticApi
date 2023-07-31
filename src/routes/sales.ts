@@ -28,15 +28,19 @@ export async function salesRoutes(app: FastifyInstance) {
 
   app.post("/sales", async (request, reply) => {
     const saleSchema = z.object({
-      customerId: z.string(),
-      totalWeight: z.number(),
-      seller: z.string()
+      client: z.string(),
+  saleId: z.string(),
+  customerId: z.string(),
+  totalWeight: z.number(),
+  seller: z.string()
     });
 
     const {
-      customerId,
-      totalWeight,
-      seller
+        client,
+        saleId,
+        customerId,
+        totalWeight,
+        seller
     } = saleSchema.parse(request.body);
 
     const customer = await prisma.customer.findFirstOrThrow({
@@ -47,6 +51,8 @@ export async function salesRoutes(app: FastifyInstance) {
 
     const sale = await prisma.sale.create({
       data: {
+        client,
+        saleId,
         customerId,
         totalWeight,
         seller

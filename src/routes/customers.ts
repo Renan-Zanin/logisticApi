@@ -1,52 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import prisma from "../utils/prisma";
-import ExcelJS from "exceljs";
-import { CreateClientInput } from "../modules/clients/clients.schema";
-
-async function extractDataFromExcel(
-  filePath: string
-): Promise<CreateClientInput[]> {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(filePath);
-  const worksheet = workbook.worksheets[0];
-
-  const customerData: CreateClientInput[] = [];
-
-  worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber !== 1) {
-      const clientCod = row.getCell(2).toString();
-      const client = row.getCell(3).toString();
-      const name = row.getCell(4).toString();
-      const register = row.getCell(13).toString();
-      const phone = row.getCell(11).toString();
-      const ddd = row.getCell(10).toString();
-      const email = row.getCell(26).toString();
-      const zipCode = row.getCell(27).toString();
-      const address = row.getCell(7).toString();
-      const city = row.getCell(8).toString();
-      const neighborhood = row.getCell(17).toString();
-      const type = row.getCell(1).toString();
-
-      customerData.push({
-        clientCod,
-        client,
-        name,
-        register,
-        phone,
-        ddd,
-        email,
-        zipCode,
-        address,
-        city,
-        neighborhood,
-        type,
-      });
-    }
-  });
-
-  return customerData;
-}
 
 export async function customersRoutes(app: FastifyInstance) {
   app.get("/customers", async (request) => {
@@ -83,7 +37,7 @@ export async function customersRoutes(app: FastifyInstance) {
       address: z.string(),
       city: z.string(),
       neighborhood: z.string(),
-      type: z.literal('VAREJO').or(z.literal('MERCADO'))
+      type: z.literal("VAREJO").or(z.literal("MERCADO")),
     });
 
     const {
@@ -103,12 +57,12 @@ export async function customersRoutes(app: FastifyInstance) {
 
     const customerExists = await prisma.customer.findUnique({
       where: {
-        register
-      }
-    })
+        register,
+      },
+    });
 
-    if(customerExists) {
-      return reply.status(401).send("Customer already exists!")
+    if (customerExists) {
+      return reply.status(401).send("Customer already exists!");
     }
     const customer = await prisma.customer.create({
       data: {
@@ -123,7 +77,7 @@ export async function customersRoutes(app: FastifyInstance) {
         address,
         city,
         neighborhood,
-        type,
+        // type,
       },
     });
 
@@ -149,7 +103,7 @@ export async function customersRoutes(app: FastifyInstance) {
       address: z.string(),
       city: z.string(),
       neighborhood: z.string(),
-      type: z.literal('VAREJO').or(z.literal('MERCADO'))
+      // type: z.literal('VAREJO').or(z.literal('MERCADO'))
     });
 
     const {
@@ -164,7 +118,7 @@ export async function customersRoutes(app: FastifyInstance) {
       address,
       city,
       neighborhood,
-      type,
+      // type,
     } = updateCustomerSchema.parse(request.body);
 
     let customer = await prisma.customer.findFirstOrThrow({
@@ -193,7 +147,7 @@ export async function customersRoutes(app: FastifyInstance) {
         address,
         city,
         neighborhood,
-        type,
+        // type,
       },
     });
 
