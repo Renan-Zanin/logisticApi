@@ -1,9 +1,11 @@
 import Fastify from "fastify";
 import "dotenv/config";
+import { importSales, importsRoutes } from "./routes/import";
+import { calculateRoutes } from "./routes/calculate";
+import "dotenv/config";
 import cors from "@fastify/cors";
 import { customersRoutes } from "./routes/customers";
-import { importsRoutes } from "./routes/import";
-import { calculateRoutes } from "./routes/calculate";
+import { salesRoutes } from "./routes/sales";
 
 const server = Fastify();
 
@@ -14,6 +16,8 @@ server.register(cors, {
 server.register(customersRoutes);
 server.register(importsRoutes);
 server.register(calculateRoutes);
+server.register(salesRoutes);
+server.register(importSales);
 
 server.get("/health", async function (req, res) {
   return { status: "OK" };
