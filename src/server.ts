@@ -25,9 +25,9 @@ server.get("/health", async function (req, res) {
 
 server
   .listen({
-    port: 3000,
+    port: 3333,
     host: "0.0.0.0",
   })
   .then(() => {
-    console.log("🚀 HTTP server running on http://localhost:3000");
+    console.log("🚀 HTTP server running on http://localhost:3333");
   });
